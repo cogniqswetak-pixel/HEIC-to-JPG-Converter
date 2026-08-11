@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HEIC to JPG Converter</title>
+  <link rel="stylesheet" href="css/design-system.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" href="css/app.css">
+<body>
+  <!-- CodePen-Style Startup Logo Reveal Splash -->
+  <div class="splash-screen" id="splash-screen">
+    <div class="splash-content">
+      <div class="splash-glow"></div>
+      <div class="splash-logo-wrap">
+        <div class="splash-pulse-ring"></div>
+        <svg class="splash-logo-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <path class="splash-cloud-path" d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" stroke-width="2"/>
+          <path class="splash-arrow-stem" d="M12 12v9" stroke-width="2"/>
+          <path class="splash-arrow-head" d="m8 17 4 4 4-4" stroke-width="2"/>
+        </svg>
+      </div>
+      <div class="splash-title-wrap">
+        <h1 class="splash-title">HEIC to JPG Converter</h1>
+        <p class="splash-subtitle">100% Private Offline Processing</p>
+      </div>
+      <div class="splash-loader-bar">
+        <div class="splash-loader-progress"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="app-container">
+    <!-- Top Header Bar -->
+    <header class="app-header">
+      <div class="header-left">
+        <div class="app-title-group">
+          <svg class="app-logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/>
+            <path d="M12 12v9"/>
+            <path d="m8 17 4 4 4-4"/>
+          </svg>
+          <span class="app-title">HEIC to JPG Converter</span>
+          <span class="privacy-badge">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            Files never leave your device
+          </span>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="telemetry-chip">
+          <span>Processed:</span>
+          <span class="telemetry-val" id="telemetry-count">0</span>
+          <span>• Saved:</span>
+          <span class="telemetry-val" id="telemetry-saved">0 B</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <div class="app-body">
+      <!-- Left Settings Inspector -->
+      <aside class="settings-sidebar">
+        <!-- Target Format Selector -->
+        <div class="sidebar-section">
+          <span class="section-label">Format</span>
+          <div class="segmented-control" id="format-selector">
+            <button class="segmented-btn active" data-value="jpg">JPG</button>
+            <button class="segmented-btn" data-value="png">PNG</button>
+          </div>
+        </div>
+
+        <div class="sidebar-divider"></div>
+
+        <!-- JPG Quality Slider -->
+        <div class="sidebar-section" id="quality-section">
+          <div class="slider-header">
+            <span class="section-label">Quality</span>
+            <span class="quality-badge" id="quality-val-display">85%</span>
+          </div>
+          <input type="range" class="custom-range" id="quality-slider" min="60" max="100" value="85" step="1">
+          <div class="quality-presets-row" id="quality-presets">
+            <button class="preset-chip" data-q="75">Compact</button>
+            <button class="preset-chip active" data-q="85">Balanced</button>
+            <button class="preset-chip" data-q="95">Ultra</button>
+          </div>
+        </div>
+
+        <!-- PNG Lossless Info (shown when PNG is active) -->
+        <div class="sidebar-section" id="png-info-section" style="display: none;">
+          <div class="slider-header">
+            <span class="section-label">Quality</span>
+            <span class="quality-badge" style="color: var(--accent-cyan);">Lossless</span>
+          </div>
+          <span class="sidebar-hint">PNG always saves at 100% pixel fidelity.</span>
+        </div>
+
+        <div class="sidebar-divider"></div>
+
+        <!-- Resize Limits -->
+        <div class="sidebar-section">
+          <span class="section-label">Resize (px)</span>
+          <div class="sidebar-input-row">
+            <input type="number" class="sidebar-input" id="max-width-input" placeholder="Width">
+            <span class="sidebar-input-x">x</span>
+            <input type="number" class="sidebar-input" id="max-height-input" placeholder="Height">
+          </div>
+        </div>
+
+        <div class="sidebar-divider"></div>
+
+        <!-- EXIF Toggle -->
+        <div class="sidebar-section">
+          <span class="section-label">Metadata</span>
+          <div class="toggle-row">
+            <span class="toggle-label">Keep EXIF data</span>
+            <label class="switch">
+              <input type="checkbox" id="toggle-exif">
+              <span class="switch-slider"></span>
+            </label>
+          </div>
+          <span class="sidebar-hint">Stripped by default for privacy.</span>
+        </div>
+
+        <div class="sidebar-divider"></div>
+
+        <!-- Orientation -->
+        <div class="sidebar-section">
+          <span class="section-label">Orientation</span>
+          <span class="sidebar-hint">Auto-rotated using embedded tags.</span>
+        </div>
+
+        <!-- Sidebar Actions -->
+        <div class="sidebar-section sidebar-actions">
+          <button class="btn-dock-action btn-dock-primary" id="btn-sidebar-convert" style="width: 100%; justify-content: center; padding: 11px 0;">Convert All Files</button>
+          <button class="btn-dock-action btn-dock-secondary" id="btn-sidebar-zip" style="width: 100%; justify-content: center; display: none;">Download All as ZIP</button>
+          <button class="btn-dock-action btn-dock-secondary" id="btn-sidebar-clear" style="width: 100%; justify-content: center;">Clear Queue</button>
+        </div>
+      </aside>
+
+      <!-- Right Main Workspace -->
+      <main class="main-workspace">
+        <!-- Drag & Drop Zone -->
+        <div class="drop-zone" id="drop-zone">
+          <div class="drop-icon-wrap animate-float">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+          </div>
+          <div class="drop-title">Drag and drop HEIC or HEIF photos here</div>
+          <div class="drop-subtitle">or <span class="browse-link" id="browse-btn">click to browse</span> from your Mac</div>
+          <div class="drop-badges-row">
+            <span class="drop-pill">.HEIC / .HEIF</span>
+            <span class="drop-pill">⌘V to Paste</span>
+          </div>
+          <input type="file" id="file-input" multiple accept=".heic,.heif,.HEIC,.HEIF" style="display: none;">
+        </div>
+
+        <!-- Toolbar -->
+        <div class="workspace-toolbar">
+          <div class="search-box">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input type="text" class="search-input" id="search-input" placeholder="Search queue...">
+          </div>
+
+          <div class="filter-pills">
+            <div class="filter-chip active" data-filter="all">All (<span id="count-all">0</span>)</div>
+            <div class="filter-chip" data-filter="waiting">Waiting (<span id="count-waiting">0</span>)</div>
+            <div class="filter-chip" data-filter="working">Working (<span id="count-working">0</span>)</div>
+            <div class="filter-chip" data-filter="done">Done (<span id="count-done">0</span>)</div>
+            <div class="filter-chip" data-filter="failed">Failed / Rejected (<span id="count-failed">0</span>)</div>
+          </div>
+
+          <div class="view-toggles">
+            <button class="view-btn active" id="view-grid-btn">Grid</button>
+            <button class="view-btn" id="view-list-btn">List</button>
+          </div>
+        </div>
+
+        <!-- File Queue Container -->
+        <div class="queue-scroll-area" id="queue-scroll-area">
+          <div class="file-grid" id="file-grid-view"></div>
+          <table class="file-table" id="file-table-view" style="display: none;">
+            <thead>
+              <tr>
+                <th style="width: 50px;">Preview</th>
+                <th>Filename</th>
+                <th>Size</th>
+                <th>Status</th>
+                <th style="text-align: right;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="file-table-body"></tbody>
+          </table>
+        </div>
+
+        <!-- Floating Action Dock -->
+        <div class="floating-dock" id="floating-dock" style="display: none;">
+          <div class="dock-summary">
+            <span class="dock-summary-count" id="dock-selected-count">0 files</span> ready
+          </div>
+          <button class="btn-dock-action btn-dock-secondary" id="btn-clear-all">Clear All</button>
+          <button class="btn-dock-action btn-dock-secondary" id="btn-download-zip" style="display: none;">Download All as ZIP</button>
+          <button class="btn-dock-action btn-dock-primary" id="btn-convert-all">Convert All</button>
+        </div>
+      </main>
+    </div>
+
+    <!-- Before / After Comparison Modal -->
+    <div class="modal-overlay" id="compare-modal" style="display: none;">
+      <div class="modal-content">
+        <div class="modal-header">
+          <span class="modal-title" id="modal-filename">Comparison: Original HEIC vs Converted JPG</span>
+          <div class="modal-header-actions">
+            <div class="modal-zoom-controls">
+              <button class="zoom-btn active" id="zoom-1x-btn">1x</button>
+              <button class="zoom-btn" id="zoom-2x-btn">2x Zoom</button>
+            </div>
+            <button class="modal-close-btn" id="modal-close-btn">&times;</button>
+          </div>
+        </div>
+        <div class="compare-viewport" id="compare-viewport">
+          <div class="compare-badge compare-badge-left">Original HEIC</div>
+          <div class="compare-badge compare-badge-right" id="compare-badge-converted">Converted JPG</div>
+          <div class="compare-stage" id="compare-stage">
+            <img class="compare-img" id="compare-img-original" src="" alt="Original">
+            <div class="compare-img-after-wrap" id="compare-img-after-wrap">
+              <img class="compare-img" id="compare-img-converted" src="" alt="Converted">
+            </div>
+            <div class="compare-slider-handle" id="compare-slider-handle">
+              <div class="compare-handle-knob">⟷</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Local Bundled Offline Vendor Scripts -->
+  <script src="js/vendor/heic2any.min.js"></script>
+  <script src="js/vendor/jszip.min.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

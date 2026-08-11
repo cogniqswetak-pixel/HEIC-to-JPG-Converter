@@ -1,0 +1,7 @@
+.DS_Store
+node_modules/
+test_convert.html
+test_sips.jpg
+istockphoto-*.heic
+nature_mountain_lake.heic
+*.log
