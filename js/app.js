@@ -702,8 +702,8 @@ async function convertAll() {
   const targetMime = state.selectedFormat === 'png' ? 'image/png' : 'image/jpeg';
   const qVal = state.quality / 100;
 
-  // Process concurrently in chunks of 3 files at once
-  const CONCURRENCY = 3;
+  // Process sequentially one at a time per PRD requirement
+  const CONCURRENCY = 1;
   for (let i = 0; i < pendingFiles.length; i += CONCURRENCY) {
     const chunk = pendingFiles.slice(i, i + CONCURRENCY);
     await Promise.all(chunk.map(fileItem => convertSingleFile(fileItem, targetMime, qVal)));
