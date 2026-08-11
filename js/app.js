@@ -589,56 +589,37 @@ async function convertSingleFile(item, targetMime, qVal) {
       isDecoded = true;
     }
 
-    // 1. Fast Hardware Acceleration Path (Instant <20ms if supported natively)
+    // 1. Offload heavy decoding and resizing to Web Worker (PRD Gap 3 fixed)
     if (!isDecoded) {
-      try {
-        const bitmap = await createImageBitmap(item.file);
-        let { width, height } = bitmap;
-        if (state.maxWidth && width > state.maxWidth) {
-          height = Math.round((height * state.maxWidth) / width);
-          width = state.maxWidth;
-        }
-        if (state.maxHeight && height > state.maxHeight) {
-          width = Math.round((width * state.maxHeight) / height);
-          height = state.maxHeight;
-        }
+      resultBlob = await new Promise((resolve, reject) => {
+        const worker = new Worker('js/converter-worker.js');
+        
+        worker.onmessage = (e) => {
+          if (e.data.type === 'progress') {
+            updateCardProgressDirect(item.id, e.data.progress, 'working');
+          } else if (e.data.type === 'success') {
+            worker.terminate();
+            resolve(e.data.blob);
+          } else if (e.data.type === 'error') {
+            worker.terminate();
+            reject(new Error(e.data.error));
+          }
+        };
 
-        const canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(bitmap, 0, 0, width, height);
-        bitmap.close();
+        worker.onerror = (err) => {
+          worker.terminate();
+          reject(err);
+        };
 
-        resultBlob = await new Promise(res => canvas.toBlob(res, targetMime, qVal));
-        if (resultBlob && resultBlob.size > 0) {
-          isDecoded = true;
-        }
-      } catch {
-        isDecoded = false;
-      }
-    }
-
-    // 2. High-Performance WASM HEIC Decoding with Real Photo Reproduction
-    if (!isDecoded) {
-      if (typeof heic2any !== 'undefined') {
-        updateCardProgressDirect(item.id, 65, 'working');
-
-        const decoded = await heic2any({
-          blob: item.file,
-          toType: targetMime,
-          quality: qVal,
-          multiple: false
+        worker.postMessage({
+          id: item.id,
+          file: item.file,
+          format: state.selectedFormat,
+          quality: state.quality,
+          maxWidth: state.maxWidth,
+          maxHeight: state.maxHeight
         });
-        resultBlob = Array.isArray(decoded) ? decoded[0] : decoded;
-      } else {
-        throw new Error('Local HEIC WASM decoder unavailable');
-      }
-
-      // Handle optional dimensions resize limit if specified
-      if (state.maxWidth || state.maxHeight) {
-        resultBlob = await resizeImageBlob(resultBlob, state.maxWidth, state.maxHeight, targetMime, qVal);
-      }
+      });
     }
 
     // 3. Preserve/Inject EXIF metadata if Keep photo details is ON
