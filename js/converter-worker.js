@@ -1,4 +1,6 @@
 // Dedicated Background Web Worker for HEIC to JPG Conversion
+self.window = self; // Polyfill for heic2any
+self.document = { createElement: () => ({ getContext: () => ({}) }) };
 self.importScripts('vendor/heic2any.min.js');
 
 self.onmessage = async (e) => {
