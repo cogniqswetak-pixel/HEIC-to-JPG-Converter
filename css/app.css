@@ -1300,11 +1300,12 @@ input:checked + .switch-slider:before {
 /* Mobile Responsiveness (iPhone declutter) */
 @media (max-width: 850px) {
   .app-body {
-    flex-direction: column-reverse;
+    flex-direction: column;
     overflow-y: auto !important;
   }
   
   .settings-sidebar {
+    order: 2;
     width: 100%;
     min-width: 100%;
     border-right: none;
@@ -1314,6 +1315,9 @@ input:checked + .switch-slider:before {
   }
   
   .main-workspace {
+    order: 1;
+    flex: none !important;
+    height: auto;
     min-height: auto;
     padding: var(--space-sm);
     gap: var(--space-sm);
