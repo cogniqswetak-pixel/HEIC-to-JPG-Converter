@@ -311,7 +311,7 @@ function handleDroppedFiles(files) {
 
     // Immediate background decode on drop using Web Worker
     if (isHeic) {
-      const previewWorker = new Worker('js/converter-worker.js');
+      const previewWorker = new Worker('js/converter-worker.js?v=' + Date.now());
       previewWorker.onmessage = (e) => {
         if (e.data.type === 'success') {
           const tb = e.data.blob;
@@ -602,7 +602,7 @@ async function convertSingleFile(item, targetMime, qVal) {
     // 1. Offload heavy decoding and resizing to Web Worker (PRD Gap 3 fixed)
     if (!isDecoded) {
       resultBlob = await new Promise((resolve, reject) => {
-        const worker = new Worker('js/converter-worker.js');
+        const worker = new Worker('js/converter-worker.js?v=' + Date.now());
         
         worker.onmessage = (e) => {
           if (e.data.type === 'progress') {
