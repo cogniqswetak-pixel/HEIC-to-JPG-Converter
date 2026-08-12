@@ -309,32 +309,22 @@ function handleDroppedFiles(files) {
 
     state.files.push(fileItem);
 
-    // Immediate background decode on drop using Web Worker
-    if (isHeic) {
-      const previewWorker = new Worker('js/converter-worker.js?v=' + Date.now());
-      previewWorker.onmessage = (e) => {
-        if (e.data.type === 'success') {
-          const tb = e.data.blob;
-          if (tb) {
-            fileItem.previewUrl = URL.createObjectURL(tb);
-            fileItem.cachedBlob = tb;
-            renderQueue();
-          }
-          previewWorker.terminate();
-        } else if (e.data.type === 'error') {
-          console.warn('Background preview decode error:', e.data.error);
-          previewWorker.terminate();
+    // Immediate background decode on drop using heic2any
+    if (isHeic && typeof heic2any !== 'undefined') {
+      heic2any({
+        blob: file,
+        toType: 'image/jpeg',
+        quality: 0.5,
+        multiple: false
+      }).then(thumbBlob => {
+        const tb = Array.isArray(thumbBlob) ? thumbBlob[0] : thumbBlob;
+        if (tb) {
+          fileItem.previewUrl = URL.createObjectURL(tb);
+          fileItem.cachedBlob = tb;
+          renderQueue();
         }
-      };
-      
-      previewWorker.postMessage({
-        id: id + '_preview',
-        file: file,
-        format: 'jpg',
-        quality: 50,
-        maxWidth: 320,
-        maxHeight: 320,
-        keepExif: false
+      }).catch((err) => {
+        console.warn('Background preview decode error:', err);
       });
     }
   });
@@ -599,37 +589,27 @@ async function convertSingleFile(item, targetMime, qVal) {
       isDecoded = true;
     }
 
-    // 1. Offload heavy decoding and resizing to Web Worker (PRD Gap 3 fixed)
+    // 1. Decode and Resize using heic2any on the main thread (reverted from worker due to iOS nested worker bug)
     if (!isDecoded) {
-      resultBlob = await new Promise((resolve, reject) => {
-        const worker = new Worker('js/converter-worker.js?v=' + Date.now());
-        
-        worker.onmessage = (e) => {
-          if (e.data.type === 'progress') {
-            updateCardProgressDirect(item.id, e.data.progress, 'working');
-          } else if (e.data.type === 'success') {
-            worker.terminate();
-            resolve(e.data.blob);
-          } else if (e.data.type === 'error') {
-            worker.terminate();
-            reject(new Error(e.data.error));
-          }
-        };
-
-        worker.onerror = (err) => {
-          worker.terminate();
-          reject(err);
-        };
-
-        worker.postMessage({
-          id: item.id,
-          file: item.file,
-          format: state.selectedFormat,
-          quality: state.quality,
-          maxWidth: state.maxWidth,
-          maxHeight: state.maxHeight
-        });
+      updateCardProgressDirect(item.id, 25, 'working');
+      
+      const qValue = Math.max(0.6, Math.min(1.0, state.quality / 100));
+      const decoded = await heic2any({ 
+        blob: item.file, 
+        toType: targetMime, 
+        quality: qValue, 
+        multiple: false 
       });
+      
+      resultBlob = Array.isArray(decoded) ? decoded[0] : decoded;
+      updateCardProgressDirect(item.id, 60, 'working');
+      
+      // Handle resize if needed
+      if (state.maxWidth || state.maxHeight) {
+        resultBlob = await resizeImageBlob(resultBlob, state.maxWidth, state.maxHeight, targetMime, qValue);
+      }
+      
+      updateCardProgressDirect(item.id, 100, 'working');
     }
 
     // 3. Preserve/Inject EXIF metadata if Keep photo details is ON
