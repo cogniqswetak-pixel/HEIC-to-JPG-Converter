@@ -1298,7 +1298,7 @@ input:checked + .switch-slider:before {
 }
 
 /* Mobile Responsiveness (iPhone declutter) */
-@media (max-width: 768px) {
+@media (max-width: 850px) {
   .app-body {
     flex-direction: column-reverse;
   }
