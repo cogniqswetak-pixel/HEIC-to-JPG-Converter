@@ -327,7 +327,9 @@ function handleDroppedFiles(files) {
         }).catch((err) => {
           console.warn('Background preview decode error:', err);
         });
-      }).catch(err => console.warn('Failed to load decoder for preview', err));
+      }).catch(err => {
+        console.warn('Failed to load decoder for preview', err);
+      });
     }
   });
 
