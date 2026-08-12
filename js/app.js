@@ -25,7 +25,7 @@ function ensureDecoderLoaded() {
   if (!decoderLoadedPromise) {
     decoderLoadedPromise = new Promise((resolve, reject) => {
       const script = document.createElement('script');
-      script.src = 'js/vendor/heic2any.min.js?v=12';
+      script.src = 'js/vendor/heic2any.min.js?v=13';
       script.onload = () => resolve();
       script.onerror = () => reject(new Error('Failed to load local HEIC decoder'));
       document.head.appendChild(script);
