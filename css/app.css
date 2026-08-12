@@ -1310,7 +1310,7 @@ input:checked + .switch-slider:before {
     min-width: 100%;
     border-right: none;
     border-top: 1px solid var(--border-subtle);
-    padding: var(--space-md) var(--space-md) 40px var(--space-md);
+    padding: var(--space-md) var(--space-md) 100px var(--space-md);
     overflow-y: visible !important;
   }
   
