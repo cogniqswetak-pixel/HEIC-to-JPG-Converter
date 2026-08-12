@@ -1300,7 +1300,7 @@ input:checked + .switch-slider:before {
 /* Mobile Responsiveness (iPhone declutter) */
 @media (max-width: 850px) {
   .app-body {
-    flex-direction: column-reverse;
+    flex-direction: column;
   }
   
   .settings-sidebar {
@@ -1313,9 +1313,10 @@ input:checked + .switch-slider:before {
   }
   
   .main-workspace {
-    min-height: 50vh;
+    min-height: 60vh;
     padding: var(--space-sm);
     gap: var(--space-sm);
+    padding-bottom: 80px; /* Space for the dock */
   }
 
   .workspace-toolbar {
@@ -1335,13 +1336,12 @@ input:checked + .switch-slider:before {
     white-space: nowrap;
   }
   
-  /* Hide scrollbar for pills */
   .filter-pills::-webkit-scrollbar {
     display: none;
   }
 
   .view-toggles {
-    display: none; /* Hide list/grid toggle on mobile to save space */
+    display: none;
   }
 
   .drop-zone {
@@ -1359,7 +1359,7 @@ input:checked + .switch-slider:before {
   }
 
   .drop-badges-row {
-    display: none; /* Hide shortcut badges on mobile */
+    display: none;
   }
 
   .header-right {
@@ -1368,5 +1368,47 @@ input:checked + .switch-slider:before {
 
   .app-header {
     padding: 0 var(--space-md);
+  }
+
+  /* Fix floating dock wrapping on mobile */
+  .floating-dock {
+    width: calc(100% - 24px);
+    bottom: 12px;
+    padding: 10px;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .dock-summary {
+    width: 100%;
+    border-right: none;
+    text-align: center;
+    padding: 0;
+    margin-bottom: 4px;
+  }
+
+  .btn-dock-action {
+    flex: 1;
+    font-size: 13px;
+    padding: 8px 12px;
+    justify-content: center;
+    text-align: center;
+  }
+
+  /* Fix compare modal overflow */
+  .modal-content {
+    width: 95vw;
+    margin: 10px;
+  }
+
+  .compare-viewport {
+    height: 50vh;
+    padding: 0;
+  }
+
+  .compare-img {
+    max-height: 50vh;
+    max-width: 100%;
   }
 }
