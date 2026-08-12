@@ -310,22 +310,24 @@ function handleDroppedFiles(files) {
     state.files.push(fileItem);
 
     // Immediate background decode on drop using heic2any
-    if (isHeic && typeof heic2any !== 'undefined') {
-      heic2any({
-        blob: file,
-        toType: 'image/jpeg',
-        quality: 0.5,
-        multiple: false
-      }).then(thumbBlob => {
-        const tb = Array.isArray(thumbBlob) ? thumbBlob[0] : thumbBlob;
-        if (tb) {
-          fileItem.previewUrl = URL.createObjectURL(tb);
-          fileItem.cachedBlob = tb;
-          renderQueue();
-        }
-      }).catch((err) => {
-        console.warn('Background preview decode error:', err);
-      });
+    if (isHeic) {
+      ensureDecoderLoaded().then(() => {
+        heic2any({
+          blob: file,
+          toType: 'image/jpeg',
+          quality: 0.5,
+          multiple: false
+        }).then(thumbBlob => {
+          const tb = Array.isArray(thumbBlob) ? thumbBlob[0] : thumbBlob;
+          if (tb) {
+            fileItem.previewUrl = URL.createObjectURL(tb);
+            fileItem.cachedBlob = tb;
+            renderQueue();
+          }
+        }).catch((err) => {
+          console.warn('Background preview decode error:', err);
+        });
+      }).catch(err => console.warn('Failed to load decoder for preview', err));
     }
   });
 
