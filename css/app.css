@@ -661,7 +661,7 @@ input:checked + .switch-slider:before {
 .card-thumb-img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   transition: transform var(--duration-normal) var(--ease-spring);
 }
 
@@ -1370,30 +1370,9 @@ input:checked + .switch-slider:before {
     padding: 0 var(--space-md);
   }
 
-  /* Fix floating dock wrapping on mobile */
+  /* Hide floating dock on mobile; buttons are available in sidebar */
   .floating-dock {
-    width: calc(100% - 24px);
-    bottom: 12px;
-    padding: 10px;
-    gap: 8px;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
-  .dock-summary {
-    width: 100%;
-    border-right: none;
-    text-align: center;
-    padding: 0;
-    margin-bottom: 4px;
-  }
-
-  .btn-dock-action {
-    flex: 1;
-    font-size: 13px;
-    padding: 8px 12px;
-    justify-content: center;
-    text-align: center;
+    display: none !important;
   }
 
   /* Fix compare modal overflow */
