@@ -1296,3 +1296,31 @@ input:checked + .switch-slider:before {
   background: linear-gradient(90deg, #00E5FF, #00B4D8);
   animation: loadProgress 1.3s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
 }
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .app-body {
+    flex-direction: column-reverse;
+  }
+  
+  .settings-sidebar {
+    width: 100%;
+    min-width: 100%;
+    border-right: none;
+    border-top: 1px solid var(--border-subtle);
+    padding: var(--space-md);
+    overflow-y: visible;
+  }
+  
+  .main-workspace {
+    min-height: 50vh;
+  }
+
+  .header-right {
+    display: none; /* Hide privacy badge to save header space */
+  }
+
+  .app-header {
+    padding: 0 var(--space-md);
+  }
+}
