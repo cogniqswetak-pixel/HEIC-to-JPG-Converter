@@ -309,22 +309,32 @@ function handleDroppedFiles(files) {
 
     state.files.push(fileItem);
 
-    // Immediate background decode on drop: Real photo appears in ~1s
-    if (isHeic && typeof heic2any !== 'undefined') {
-      heic2any({
-        blob: file,
-        toType: 'image/jpeg',
-        quality: 0.75,
-        multiple: false
-      }).then(thumbBlob => {
-        const tb = Array.isArray(thumbBlob) ? thumbBlob[0] : thumbBlob;
-        if (tb) {
-          fileItem.previewUrl = URL.createObjectURL(tb);
-          fileItem.cachedBlob = tb;
-          renderQueue();
+    // Immediate background decode on drop using Web Worker
+    if (isHeic) {
+      const previewWorker = new Worker('js/converter-worker.js');
+      previewWorker.onmessage = (e) => {
+        if (e.data.type === 'success') {
+          const tb = e.data.blob;
+          if (tb) {
+            fileItem.previewUrl = URL.createObjectURL(tb);
+            fileItem.cachedBlob = tb;
+            renderQueue();
+          }
+          previewWorker.terminate();
+        } else if (e.data.type === 'error') {
+          console.warn('Background preview decode error:', e.data.error);
+          previewWorker.terminate();
         }
-      }).catch((err) => {
-        console.warn('Background preview decode error:', err);
+      };
+      
+      previewWorker.postMessage({
+        id: id + '_preview',
+        file: file,
+        format: 'jpg',
+        quality: 50,
+        maxWidth: 320,
+        maxHeight: 320,
+        keepExif: false
       });
     }
   });
