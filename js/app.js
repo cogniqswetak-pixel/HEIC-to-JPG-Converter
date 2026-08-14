@@ -76,8 +76,66 @@ const compareSliderHandle = document.getElementById('compare-slider-handle');
 const compareViewport = document.getElementById('compare-viewport');
 const modalFilename = document.getElementById('modal-filename');
 
+// Theme Engine (System / Light / Dark)
+const THEME_STORAGE_KEY = 'cogniq_theme_mode';
+let currentThemeMode = 'system';
+
+function initTheme() {
+  const saved = localStorage.getItem(THEME_STORAGE_KEY) || 'system';
+  setTheme(saved, false);
+
+  // Live listener for System/Chrome Dark-Light Mode switches
+  const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+  if (mediaQuery.addEventListener) {
+    mediaQuery.addEventListener('change', () => {
+      if (currentThemeMode === 'system') {
+        applyThemeDOM('system');
+      }
+    });
+  }
+
+  // Theme button controls
+  document.querySelectorAll('#theme-selector .theme-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      setTheme(btn.dataset.theme, true);
+    });
+  });
+}
+
+function setTheme(mode, save = true) {
+  currentThemeMode = mode;
+  if (save) {
+    localStorage.setItem(THEME_STORAGE_KEY, mode);
+  }
+  applyThemeDOM(mode);
+  updateThemeButtonsUI(mode);
+}
+
+function applyThemeDOM(mode) {
+  const root = document.documentElement;
+  if (mode === 'system') {
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    root.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+    root.dataset.mode = 'system';
+  } else {
+    root.setAttribute('data-theme', mode);
+    root.dataset.mode = mode;
+  }
+}
+
+function updateThemeButtonsUI(mode) {
+  document.querySelectorAll('#theme-selector .theme-btn').forEach(btn => {
+    if (btn.dataset.theme === mode) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
+}
+
 // Initialize
 function init() {
+  initTheme();
   initSplashScreen();
   initEventListeners();
   renderQueue();
