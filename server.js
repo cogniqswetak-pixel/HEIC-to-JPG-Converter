@@ -2,7 +2,6 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
-const PORT = parseInt(process.env.PORT || '3000', 10);
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
@@ -16,16 +15,18 @@ const MIME_TYPES = {
   '.svg': 'image/svg+xml'
 };
 
-const server = http.createServer((req, res) => {
+function handleRequest(req, res) {
   let reqPath = req.url.split('?')[0];
-  if (reqPath === '/' || reqPath === '') reqPath = '/app.html';
+  if (reqPath === '/' || reqPath === '' || reqPath === '/index.html') {
+    reqPath = '/app.html';
+  }
   
   const filePath = path.join(__dirname, reqPath);
   
   fs.readFile(filePath, (err, data) => {
     if (err) {
-      res.writeHead(404, { 'Content-Type': 'text/plain' });
-      res.end('Not Found');
+      res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
+      res.end(`<h1>404 Not Found</h1><p><a href="/app.html">Go to HEIC to JPG Converter</a></p>`);
       return;
     }
     const ext = path.extname(filePath).toLowerCase();
@@ -36,20 +37,31 @@ const server = http.createServer((req, res) => {
     });
     res.end(data);
   });
-});
+}
 
-function startServer(port) {
-  server.listen(port, '0.0.0.0', () => {
-    console.log(`HEIC to JPG Converter web app is running at: http://localhost:${port}/app.html`);
-  }).on('error', (err) => {
+function tryPort(port) {
+  const server = http.createServer(handleRequest);
+  
+  server.once('error', (err) => {
     if (err.code === 'EADDRINUSE') {
-      console.log(`Port ${port} in use, trying ${port + 1}...`);
-      startServer(port + 1);
+      tryPort(port + 1);
     } else {
       console.error('Server error:', err);
     }
   });
+
+  server.once('listening', () => {
+    const address = server.address();
+    console.log(`\n==================================================`);
+    console.log(`🚀 HEIC to JPG Converter is LIVE!`);
+    console.log(`👉 Open: http://localhost:${address.port}/app.html`);
+    console.log(`==================================================\n`);
+  });
+
+  server.listen(port, '0.0.0.0');
 }
 
-startServer(PORT);
+const START_PORT = parseInt(process.env.PORT || '3001', 10);
+tryPort(START_PORT);
+
 
